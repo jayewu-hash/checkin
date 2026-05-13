@@ -3,14 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
   <title>荷陽PT打卡系統</title>
+
+  <meta property="og:title" content="荷陽PT打卡系統" />
+  <meta property="og:description" content="內部工讀生專用打卡系統" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://jayewu-hash.github.io/checkin/" />
+  <meta property="og:image" content="" />
+
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
   <style>
-    body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #f4f4f9; }
-    .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: center; width: 80%; max-width: 300px; }
-    button { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.1rem; border: none; border-radius: 12px; cursor: pointer; color: white; font-weight: bold; }
-    .btn-in { background: #28a745; } .btn-out { background: #dc3545; }
-    #status { margin-top: 20px; color: #666; font-size: 0.9rem; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      min-height: 100vh; 
+      margin: 0; 
+      background-color: #f4f4f9; 
+    }
+    .card { 
+      background: white; 
+      padding: 40px; 
+      border-radius: 20px; 
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+      text-align: center; 
+      width: 85%; 
+      max-width: 300px; 
+    }
+    h2 { margin-top: 0; color: #333; }
+    button { 
+      width: 100%; 
+      padding: 15px; 
+      margin: 10px 0; 
+      font-size: 1.1rem; 
+      border: none; 
+      border-radius: 12px; 
+      cursor: pointer; 
+      color: white; 
+      font-weight: bold; 
+      transition: transform 0.1s;
+    }
+    button:active { transform: scale(0.98); }
+    .btn-in { background: #28a745; } 
+    .btn-out { background: #dc3545; }
+    #status { margin-top: 20px; color: #666; font-size: 0.9rem; background: #eee; padding: 10px; border-radius: 8px; }
   </style>
 </head>
 <body>
