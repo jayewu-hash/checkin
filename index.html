@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工讀打卡系統</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #f4f4f9; }
+    .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: center; width: 80%; max-width: 300px; }
+    button { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.1rem; border: none; border-radius: 12px; cursor: pointer; color: white; font-weight: bold; }
+    .btn-in { background: #28a745; } .btn-out { background: #dc3545; }
+    #status { margin-top: 20px; color: #666; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="uName">打卡系統</h2>
+    <button class="btn-in" onclick="doCheck('上班')">上班打卡</button>
+    <button class="btn-out" onclick="doCheck('下班')">下班打卡</button>
+    <div id="status">系統初始化中...</div>
+  </div>
+
+  <script>
+    const LIFF_ID = "2010071063-6exBykpT"; // 填入你的新 LIFF ID
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzQqSqOa0uO3R6V4Jq_m4s1XIrEEHIGlQ5fVASliK8HTgEN-Rs4ffDf6nav7cZ4LG6q/exec"; // 填入你剛剛複製的 GAS /exec 網址
+    let userName = "未知";
+
+    window.onload = function() {
+      liff.init({ liffId: LIFF_ID }).then(() => {
+        if (!liff.isLoggedIn()) {
+          liff.login();
+        } else {
+          liff.getProfile().then(p => {
+            userName = p.displayName;
+            document.getElementById('uName').innerText = "你好，" + userName;
+            document.getElementById('status').innerText = "✅ 系統就緒";
+          });
+        }
+      });
+    };
+
+    function doCheck(type) {
+      document.getElementById('status').innerText = "📍 取得 GPS 中...";
+      navigator.geolocation.getCurrentPosition(pos => {
+        const loc = pos.coords.latitude + "," + pos.coords.longitude;
+        const finalUrl = `${GAS_URL}?name=${encodeURIComponent(userName)}&type=${encodeURIComponent(type)}&location=${encodeURIComponent(loc)}`;
+        
+        document.getElementById('status').innerText = "☁️ 傳送資料中...";
+        // 使用 fetch 發送到 GAS
+        fetch(finalUrl, { mode: 'no-cors' }).then(() => {
+          alert(type + "成功！");
+          document.getElementById('status').innerText = "✅ 打卡成功";
+        });
+      }, () => alert("請開啟 GPS 權限"));
+    }
+  </script>
+</body>
+</html>
