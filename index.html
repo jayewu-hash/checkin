@@ -3,51 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
   <title>荷陽PT打卡系統</title>
-
+  
   <meta property="og:title" content="荷陽PT打卡系統" />
   <meta property="og:description" content="內部工讀生專用打卡系統" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://jayewu-hash.github.io/checkin/" />
-  <meta property="og:image" content="" />
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
   <style>
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: center; 
-      min-height: 100vh; 
-      margin: 0; 
-      background-color: #f4f4f9; 
-    }
-    .card { 
-      background: white; 
-      padding: 40px; 
-      border-radius: 20px; 
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
-      text-align: center; 
-      width: 85%; 
-      max-width: 300px; 
-    }
-    h2 { margin-top: 0; color: #333; }
-    button { 
-      width: 100%; 
-      padding: 15px; 
-      margin: 10px 0; 
-      font-size: 1.1rem; 
-      border: none; 
-      border-radius: 12px; 
-      cursor: pointer; 
-      color: white; 
-      font-weight: bold; 
-      transition: transform 0.1s;
-    }
-    button:active { transform: scale(0.98); }
+    body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #f4f4f9; }
+    .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: center; width: 85%; max-width: 320px; }
+    h2 { color: #333; margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; }
+    button { width: 100%; padding: 16px; margin: 10px 0; font-size: 1.1rem; border: none; border-radius: 12px; cursor: pointer; color: white; font-weight: bold; transition: opacity 0.2s; }
+    button:active { opacity: 0.8; }
     .btn-in { background: #28a745; } 
     .btn-out { background: #dc3545; }
     #status { margin-top: 20px; color: #666; font-size: 0.9rem; background: #eee; padding: 10px; border-radius: 8px; }
@@ -55,44 +24,70 @@
 </head>
 <body>
   <div class="card">
-    <h2 id="uName">打卡系統</h2>
+    <h2 id="uName">辨識身分中...</h2>
+    
     <button class="btn-in" onclick="doCheck('上班')">上班打卡</button>
     <button class="btn-out" onclick="doCheck('下班')">下班打卡</button>
+    
     <div id="status">系統初始化中...</div>
   </div>
 
   <script>
-    const LIFF_ID = "2010071063-6exBykpT"; // 填入你的新 LIFF ID
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzQqSqOa0uO3R6V4Jq_m4s1XIrEEHIGlQ5fVASliK8HTgEN-Rs4ffDf6nav7cZ4LG6q/exec"; // 填入你剛剛複製的 GAS /exec 網址
+    const LIFF_ID = "2010071063-6exBykpT"; // 你的 LIFF ID
+    const GAS_URL = "請貼上你的_GAS_網址"; // ⚠️ 請務必換成你自己的 GAS /exec 網址
+    
     let userName = "未知";
+    let isNameLoaded = false; // 【防呆鎖】預設為 false (未載入)
 
     window.onload = function() {
       liff.init({ liffId: LIFF_ID }).then(() => {
         if (!liff.isLoggedIn()) {
           liff.login();
         } else {
+          // 成功登入後抓取名稱
           liff.getProfile().then(p => {
             userName = p.displayName;
+            isNameLoaded = true; // 【解開防呆鎖】成功抓到名字，改為 true
+            
             document.getElementById('uName').innerText = "你好，" + userName;
-            document.getElementById('status').innerText = "✅ 系統就緒";
+            document.getElementById('status').innerText = "✅ 系統就緒，可以打卡了";
+          }).catch(err => {
+            document.getElementById('status').innerText = "❌ 名稱讀取失敗，請重整網頁";
           });
         }
+      }).catch(err => {
+        document.getElementById('status').innerText = "❌ LIFF 初始化失敗";
       });
     };
 
     function doCheck(type) {
+      // 【防呆檢查】如果還沒抓到名字，跳出警告並中斷執行
+      if (!isNameLoaded) {
+        alert("請等待系統辨識LINE名稱，或您可嘗試關閉網頁重新開啟");
+        return; // 中斷程式，不往下執行定位與傳送
+      }
+
       document.getElementById('status').innerText = "📍 取得 GPS 中...";
+      
       navigator.geolocation.getCurrentPosition(pos => {
         const loc = pos.coords.latitude + "," + pos.coords.longitude;
+        // 組裝帶有參數的網址送給 GAS
         const finalUrl = `${GAS_URL}?name=${encodeURIComponent(userName)}&type=${encodeURIComponent(type)}&location=${encodeURIComponent(loc)}`;
         
         document.getElementById('status').innerText = "☁️ 傳送資料中...";
-        // 使用 fetch 發送到 GAS
+        
+        // 使用 fetch 將資料送到背景
         fetch(finalUrl, { mode: 'no-cors' }).then(() => {
-          alert(type + "成功！");
-          document.getElementById('status').innerText = "✅ 打卡成功";
+          alert(type + "打卡成功！");
+          document.getElementById('status').innerText = "✅ " + type + "成功";
+        }).catch(err => {
+          alert("網路連線不穩，請確認後重試");
+          document.getElementById('status').innerText = "❌ 傳送失敗";
         });
-      }, () => alert("請開啟 GPS 權限"));
+      }, () => {
+        alert("定位失敗！請確保手機已開啟 GPS，並允許 LINE 存取位置。");
+        document.getElementById('status').innerText = "❌ 缺少定位權限";
+      }, { enableHighAccuracy: true, timeout: 10000 });
     }
   </script>
 </body>
